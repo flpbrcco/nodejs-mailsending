@@ -1,74 +1,42 @@
-const express = require("express");
-const bodyParser = require('body-parser');
+// Use at least Nodemailer v4.1.0
 const nodemailer = require('nodemailer');
-const app = express();
-// Parse incoming requests data (https://github.com/expressjs/body-parser)
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-const route = express.Router();
 
-const port = process.env.PORT || 5000;
+// Generate SMTP service account from ethereal.email
+nodemailer.createTestAccount((err, account) => {
+    if (err) {
+        console.error('Failed to create a testing account. ' + err.message);
+        return process.exit(1);
+    }
 
-app.use('/v1', route);
+    console.log('Credentials obtained, sending message...');
 
-app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-});
-
-
-const transporter = nodemailer.createTransport({
-    port: 465,
-    host: "smtp.gmail.com",
-    auth: {
-        user: 'youremail@gmail.com',
-        pass: 'xxxxxxxxxx',
-    },
-    secure: true, // upgrades later with STARTTLS -- change this based on the PORT
-});
-
-route.post('/text-mail', (req, res) => {
-    const {to, subject, text } = req.body;
-    const mailData = {
-        from: 'youremail@gmail.com',
-        to: to,
-        subject: subject,
-        text: text,
-        html: '<b>Hey there! </b><br> This is our first message sent with Nodemailer<br/>',
-    };
-
-    transporter.sendMail(mailData, (error, info) => {
-        if (error) {
-            return console.log(error);
+    // Create a SMTP transporter object
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.office365.com',
+        port: 587,
+        auth: {
+            user: 'filipe.bc@live.com',
+            pass: 'Savann@live11'
         }
-        res.status(200).send({ message: "Mail send", message_id: info.messageId });
     });
-});
 
-
-route.post('/attachments-mail', (req, res) => {
-    const {to, subject, text } = req.body;
-    const mailData = {
-        from: 'youremail@gmail.com',
-        to: to,
-        subject: subject,
-        text: text,
-        html: '<b>Hey there! </b><br> This is our first message sent with Nodemailer<br/>',
-        attachments: [
-            {   // file on disk as an attachment
-                filename: 'nodemailer.png',
-                path: 'nodemailer.png'
-            },
-            {   // file on disk as an attachment
-                filename: 'text_file.txt',
-                path: 'text_file.txt'
-            }
-        ]
+    // Message object
+    let message = {
+        from: 'Filipe Barros <filipe.bc@live.com>',
+        to: 'Filipe Barros <lipe.barros94@gmail.com>, Filipe Barros <filipe.bc@live.com',
+        subject: 'Nodemailer is unicode friendly ✔',
+        text: 'Hello to myself!',
+        html: '<p><b>Hello</b> to myself!</p>'
     };
 
-    transporter.sendMail(mailData, (error, info) => {
-        if (error) {
-            return console.log(error);
+    transporter.sendMail(message, (err, info) => {
+        if (err) {
+            console.log('Error occurred. ' + err.message);
+            return process.exit(1);
         }
-        res.status(200).send({ message: "Mail send", message_id: info.messageId });
+
+        console.log('Message sent: %s', info.messageId);
+        // Preview only available when sending through an Ethereal account
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
     });
 });
