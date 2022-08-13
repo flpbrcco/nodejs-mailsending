@@ -15,8 +15,8 @@ nodemailer.createTestAccount((err, account) => {
         host: 'smtp.office365.com',
         port: 587,
         auth: {
-            user: 'filipe.bc@live.com',
-            pass: 'Savann@live11'
+            user: 'usuário',
+            pass: 'senha'
         }
     });
 
